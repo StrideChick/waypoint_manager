@@ -5,7 +5,7 @@ namespace waypoint_manager
 WaypointManager::WaypointManager(const rclcpp::NodeOptions & options)
 : Node("waypoint_navigator", options)
 { 
-  this->client_ = this->create_client<chick_nav_msgs::srv::NavigateToGoal>("waypoint_foller");
+  this->client_ = this->create_client<chick_nav_msgs::srv::NavigateToGoal>("waypoint");
   if (!this->client_->wait_for_service(std::chrono::seconds(10))) {
       RCLCPP_ERROR(this->get_logger(), "Service not available after waiting");
       return;
@@ -26,16 +26,15 @@ void WaypointManager::start_navigation(const std_msgs::msg::Empty::SharedPtr msg
     auto request = std::make_shared<chick_nav_msgs::srv::NavigateToGoal::Request>();
     request->pose = waypoints_[waypoint_index_];
     RCLCPP_INFO(this->get_logger(), "Navigating to waypoint %d...", waypoint_index_);
-    auto result = client_->async_send_request(request);
-    if (rclcpp::spin_until_future_complete(this->get_node_base_interface(), result) == rclcpp::FutureReturnCode::SUCCESS)
-    {
-      waypoint_index_++;
-    } else {
-      return;
-    }
+
+    using ServiceResponseFuture = rclcpp::Client<chick_nav_msgs::srv::NavigateToGoal>::SharedFuture;
+    auto response_received_callback = [this](ServiceResponseFuture future) {
+      // auto result = future.get();
+      // path_ = result->path;
+    };
+    auto result = client_->async_send_request(request, response_received_callback);
   } else {
     RCLCPP_ERROR(this->get_logger(), "No waypoints available to navigate.");
-    return;
   }
 }
 

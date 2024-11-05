@@ -5,12 +5,21 @@ namespace waypoint_manager
 WaypointManager::WaypointManager(const rclcpp::NodeOptions & options)
 : Node("waypoint_navigator", options)
 { 
-  this->client_ = this->create_client<chick_nav_msgs::srv::NavigateToGoal>("waypoint");
-  if (!this->client_->wait_for_service(std::chrono::seconds(10))) {
-      RCLCPP_ERROR(this->get_logger(), "Service not available after waiting");
-      return;
+  declare_parameter<std::string>("waypoints_mode","single"); //"mult");
+  get_parameter("waypoints_mode", waypoints_mode_);
+  if (waypoints_mode_ == "single"){
+    this->client_ = this->create_client<chick_nav_msgs::srv::NavigateToGoal>("waypoint");
+    if (!this->client_->wait_for_service(std::chrono::seconds(10))) {
+        RCLCPP_ERROR(this->get_logger(), "Service not available after waiting");
+        return;
+    }
+  }else{
+    this->client_ = this->create_client<chick_nav_msgs::srv::NavigateToMultGoal>("waypoints");
+    if (!this->client_->wait_for_service(std::chrono::seconds(10))) {
+        RCLCPP_ERROR(this->get_logger(), "Service not available after waiting");
+        return;
+    }
   }
-
   nav_sub_ = this->create_subscription<std_msgs::msg::Empty>(
     "start_topic", 10, std::bind(&WaypointManager::start_navigation, this,std::placeholders::_1));
 }

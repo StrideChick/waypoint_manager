@@ -25,11 +25,11 @@ private:
     bool loadWaypointsFromFile(const std::string &file_path);
     
     //ros
-    rclcpp::Subscription<std_msgs::msg::Empty>::SharedPtr nav_sub_;
+    rclcpp::Subscription<std_msgs::msg::Empty>::SharedPtr nav_trigger_sub_;
     rclcpp::Client<chick_nav_msgs::srv::NavigateToGoal>::SharedPtr single_waypoint_client_;
     rclcpp::Client<chick_nav_msgs::srv::NavigateToMultGoal>::SharedPtr mult_waypoint_client_;
     std::vector<geometry_msgs::msg::PoseStamped> waypoints_;
-
+    
     // void handleServiceResponse(const rclcpp::Client<nav2_msgs::srv::NavigateToPose>::SharedFuture future);
 };
 }

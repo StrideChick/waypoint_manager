@@ -19,6 +19,7 @@ public:
     explicit WaypointManager(const rclcpp::NodeOptions & options);
 
 private:
+    std::string waypoints_mode_;
     geometry_msgs::msg::PoseStamped createWaypoint(float x, float y, float theta);
     void start_navigation(const std_msgs::msg::Empty::SharedPtr msg);
     void sendNextGoal();

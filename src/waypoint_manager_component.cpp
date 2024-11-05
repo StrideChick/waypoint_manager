@@ -8,14 +8,14 @@ WaypointManager::WaypointManager(const rclcpp::NodeOptions & options)
   declare_parameter<std::string>("waypoints_mode","single"); //"mult");
   get_parameter("waypoints_mode", waypoints_mode_);
   if (waypoints_mode_ == "single"){
-    this->client_ = this->create_client<chick_nav_msgs::srv::NavigateToGoal>("waypoint");
-    if (!this->client_->wait_for_service(std::chrono::seconds(10))) {
+    this->single_waypoint_client_ = this->create_client<chick_nav_msgs::srv::NavigateToGoal>("waypoint");
+    if (!this->single_waypoint_client_->wait_for_service(std::chrono::seconds(10))) {
         RCLCPP_ERROR(this->get_logger(), "Service not available after waiting");
         return;
     }
   }else{
-    this->client_ = this->create_client<chick_nav_msgs::srv::NavigateToMultGoal>("waypoints");
-    if (!this->client_->wait_for_service(std::chrono::seconds(10))) {
+    this->mult_waypoint_client_ = this->create_client<chick_nav_msgs::srv::NavigateToMultGoal>("waypoints");
+    if (!this->mult_waypoint_client_->wait_for_service(std::chrono::seconds(10))) {
         RCLCPP_ERROR(this->get_logger(), "Service not available after waiting");
         return;
     }
@@ -41,7 +41,7 @@ void WaypointManager::start_navigation(const std_msgs::msg::Empty::SharedPtr msg
       // auto result = future.get();
       // path_ = result->path;
     };
-    auto result = client_->async_send_request(request, response_received_callback);
+    auto result = single_waypoint_client_->async_send_request(request, response_received_callback);
   } else {
     RCLCPP_ERROR(this->get_logger(), "No waypoints available to navigate.");
   }

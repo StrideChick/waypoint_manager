@@ -20,7 +20,7 @@ WaypointManager::WaypointManager(const rclcpp::NodeOptions & options)
         return;
     }
   }
-  nav_sub_ = this->create_subscription<std_msgs::msg::Empty>(
+  nav_trigger_sub_ = this->create_subscription<std_msgs::msg::Empty>(
     "start_topic", 10, std::bind(&WaypointManager::start_navigation, this,std::placeholders::_1));
 }
 
@@ -32,16 +32,22 @@ void WaypointManager::start_navigation(const std_msgs::msg::Empty::SharedPtr msg
     return;
   } 
   if (!waypoints_.empty()) {
-    auto request = std::make_shared<chick_nav_msgs::srv::NavigateToGoal::Request>();
-    request->pose = waypoints_[waypoint_index_];
-    RCLCPP_INFO(this->get_logger(), "Navigating to waypoint %d...", waypoint_index_);
-
-    using ServiceResponseFuture = rclcpp::Client<chick_nav_msgs::srv::NavigateToGoal>::SharedFuture;
-    auto response_received_callback = [this](ServiceResponseFuture future) {
-      // auto result = future.get();
-      // path_ = result->path;
-    };
-    auto result = single_waypoint_client_->async_send_request(request, response_received_callback);
+    if (waypoints_mode_ == "single"){
+      auto request = std::make_shared<chick_nav_msgs::srv::NavigateToGoal::Request>();
+      request->pose = waypoints_[waypoint_index_];
+      RCLCPP_INFO(this->get_logger(), "Navigating to waypoint %d...", waypoint_index_);
+  
+      using ServiceResponseFuture = rclcpp::Client<chick_nav_msgs::srv::NavigateToGoal>::SharedFuture;
+      auto response_received_callback = [this](ServiceResponseFuture future) {
+        // auto result = future.get();
+        // path_ = result->path;
+      };
+      auto result = single_waypoint_client_->async_send_request(request, response_received_callback);
+    }else{
+      auto request = std::make_shared<chick_nav_msgs::srv::NavigateToMultGoal::Request>();
+      //ポイント複数追加　　//TODO
+      request->pose = waypoints_[waypoint_index_];
+    }
   } else {
     RCLCPP_ERROR(this->get_logger(), "No waypoints available to navigate.");
   }

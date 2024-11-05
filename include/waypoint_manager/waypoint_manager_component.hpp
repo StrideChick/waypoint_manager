@@ -9,6 +9,7 @@
 #include <fstream>
 #include <sstream>
 #include "chick_nav_msgs/srv/navigate_to_goal.hpp"
+#include "chick_nav_msgs/srv/navigate_to_mult_goal.hpp"
 
 namespace waypoint_manager
 {
